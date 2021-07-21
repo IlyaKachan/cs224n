@@ -1,0 +1,7 @@
+# input data folder
+data/*
+!data/.gitkeep
+
+# model weights
+results/*
+!results/.gitkeep

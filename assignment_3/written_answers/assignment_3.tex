@@ -1,0 +1,95 @@
+\documentclass[12pt]{article}
+\title{CS 224N - Assignment 3}
+\author{Ilya Kachan}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Machine Learning \& Neural Networks}
+
+\noindent (a) i. Momentum technique makes gradient updates more smooth since it uses not the gradient vector itself at each step, but the weighted everage of all gradients from past steps with exponentially decaying weights. This allows to reduce the gradient variance and makes the optimization more "directional", since the gradient direction doesn't change from step to step as much as in the ordinary gradient decay.
+\smallskip
+
+\noindent (a) ii. Dividing by $\sqrt{\mathbf{v}}$ means giving more update to the weights, whic gradients are close to zero. Potentially this trick could help the optimization procedure to get out of local minimums.
+\smallskip
+
+\noindent (b) i. In dropout $\gamma = 1 - p$, since $\mathbb{E} h_{drop, i} = h_i (1-p) + 0 \cdot p = (1-p) h_i$.
+\smallskip
+
+\noindent (b) ii. Applying dropout to a neural network amounts to sampling a “thinned” network from
+it. For each presentation of each training case, a new thinned network is sampled and
+trained. So training a neural network with dropout can be seen as training a collection of $2^n$
+thinned networks with extensive weight sharing, where each thinned network gets trained
+very rarely, if at all. At test time, it is not feasible to explicitly average the predictions from exponentially many thinned models.
+
+\section{Neural Transition-Based Dependency Parsing}
+
+\noindent (a) Let's first parse a sentence "I parsed this sentence correctly" manually:
+
+\noindent
+\begin{tabular}{ p{10em} | p{10em} | p{5em} | p{5em} }
+Stack & Buffer & New Dependecy & Transition \\
+\hline
+[ROOT] & [I, parsed, this, sentence, correctly] & & Initial Configuration \\
+\hline
+[ROOT, I] & [parsed, this, sentence, correctly] & & SHIFT \\
+\hline
+[ROOT, I, parsed] & [this, sentence, correctly] & & SHIFT \\
+\hline
+[ROOT, parsed] & [this, sentence, correctly] & parsed $\to$ I & LEFT-ARC \\
+\hline
+[ROOT, parsed, this] & [sentence, correctly] & & SHIFT \\
+\hline
+[ROOT, parsed, this, sentence] & [correctly] & & SHIFT \\
+\hline
+[ROOT, parsed, sentence] & [correctly] & sentence $\to$ this & LEFT-ARC \\
+\hline
+[ROOT, parsed] & [correctly] & parsed $\to$ sentence & RIGHT-ARC \\
+\hline
+[ROOT, parsed, correctly] & [] & & SHIFT \\
+\hline
+[ROOT, parsed] & [] & parsed $\to$ correctly & RIGHT-ARC \\
+\hline
+[ROOT] & [] & ROOT $\to$ parsed & RIGHT-ARC \\
+\hline
+\end{tabular}
+\medskip
+
+\noindent(b) Since each parsing step either decsearses the stack size by 1 word or decreases the buffer size by 1 word, a sentence with $n$ words will be parsed with $2n$ steps.
+\medskip
+
+\noindent(e) The best results my model has achieved are: 88.95 UAS on test set and 88.76 UAS on dev set (7th epoch).
+\medskip
+
+\noindent(f)
+
+i. \textit{I disembarked and was heading to a wedding fearing my death}.
+\begin{itemize}
+\item \textbf{Error type}: Verb phrase attachment error.
+\item \textbf{Incorrect dependency}: wedding $\to$ fearing.
+\item \textbf{Correct dependency}: heading $\to$ fearing.
+\end{itemize}
+
+ii. \textit{It makes me want to rush out and rescue people from dilemmas of their own making}.
+\begin{itemize}
+\item \textbf{Error type}: Coordination attachment error.
+\item \textbf{Incorrect dependency}: makes $\to$ rescue.
+\item \textbf{Correct dependency}: rush $\to$ rescue.
+\end{itemize}
+
+iii. \textit{It is on loan from a guy named Joe O'Neill in Midland, Texas}.
+\begin{itemize}
+\item \textbf{Error type}: Prepositional phrase attachment error.
+\item \textbf{Incorrect dependency}: named $\to$ Midland.
+\item \textbf{Correct dependency}: load $\to$ Midland.
+\end{itemize}
+
+iv. \textit{Brian has been one of the most crucial elements to the success of Mozilla software}.
+\begin{itemize}
+\item \textbf{Error type}: Prepositional phrase attachment error.
+\item \textbf{Incorrect dependency}: elements $\to$ most.
+\item \textbf{Correct dependency}: crucial $\to$ most.
+\end{itemize}
+
+\end{document}
