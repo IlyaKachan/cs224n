@@ -1,0 +1,12 @@
+# Ignore python byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ignore Jupyter notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore IDE meta data (PyCharm & VS Code)
+.idea
+.vscode/
+*.code-workspace
