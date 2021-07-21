@@ -1,0 +1,20 @@
+# input data folder
+chr_en_data/*
+!chr_en_data/.gitkeep
+
+# sanity check data folder
+sanity_check_en_es_data/*
+!sanity_check_en_es_data/.gitkeep
+
+# output data folder
+outputs/*
+!outputs/.gitkeep
+
+# model artifacts
+model.bin
+model.bin.optim
+src.model
+tgt.model
+src.vocab
+tgt.vocab
+vocab.json
