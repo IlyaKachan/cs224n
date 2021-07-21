@@ -1,0 +1,7 @@
+# model params
+saved_params_*.npy
+saved_state_*.pickle
+
+# input data folder contents
+utils/datasets/*
+!utils/datasets/.gitkeep
