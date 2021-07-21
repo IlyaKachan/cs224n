@@ -6,8 +6,14 @@ assignment tasks of Stanford's NLP course
   http://web.stanford.edu/class/cs224n/
 ) (Winter 2021).
 
-`env.yml` file below describes the "merged" environment that must be enough
-for every assignment.
+**Common notes about structure of this repository:**
+
+- `env.yml` file below describes the consolidated environment that should be
+sufficient for every assignment.
+- Inside almost every assignment folder there are two common sub-folders:
+  - `task` sub-folder contains a pdf handout that describes the task.
+  - `written_answers` sub-folder contains two files (pdf and tex) in which I
+  put my answers to the questions formulated in the pdf handout.
 
 ## Description from course tutors
 
