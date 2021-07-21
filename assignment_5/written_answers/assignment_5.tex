@@ -1,0 +1,175 @@
+\documentclass[12pt]{article}
+\title{CS 224N - Assignment 5}
+\author{Ilya Kachan}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Attention exploration}
+
+\noindent (a) Query vector $q$ and key vectors $k_i$ must be such that the dot product $k_j^T q$ dominates over all the rest scalar products $k_i^T q$, $i \ne j$.
+\smallskip
+
+\noindent (b). Put $q = Q(k_a + k_b)$ for sufficiently large $Q > 0$. Then
+$$
+k_i^T q = \left\{
+\begin{array}{l}
+Q,\quad i \in \{a, b\} \\
+0, \quad i \not\in \{a, b\}
+\end{array}
+\right.,
+\qquad
+\alpha_i = \left\{
+\begin{array}{l}
+\frac{e^Q}{n-2 + 2e^Q},\quad i \in \{a, b\} \\
+\frac{1}{n-2 + 2e^Q}, \quad i \not\in \{a, b\}
+\end{array}
+\right.,
+$$
+Note that as $Q\to\infty$ in case $i \in \{a, b\}$ we obtain $\alpha_i \to 1/2$, while in case $i \not\in \{a, b\}$: $\alpha_i \to 0$.
+\smallskip
+
+\noindent (c) i. Put $q = Q(\mu_a + \mu_b)$. According to the properties of normal distribution: $k_i^T \mu_j = \mu_j^T k_i \sim N(\mu_j^T \mu_i, \mu_j^T \Sigma_i \mu_j) = N(\mu_j^T \mu_i, \alpha I)$. Thus $k_i^T \mu_j \approx \mu_j^T \mu_i$ -- non-random value, when $\alpha$ is sufficiently small. This value equals $0$ for $i\ne j$ and $1$ otherwise. The rest explanation is the same as in the point (b).
+
+ii. Note that $k_a^T \mu_j = \mu_j^T k_a \sim N(\mu_j^T \mu_a, \mu_j^T \Sigma_a \mu_j) = N(\mu_j^T \mu_a, (\alpha + (\mu_j^T\mu_a)^2/2) I)$. Thus, if $j \ne a$, $k_a^T \mu_j \approx 0$ and $k_a^T \mu_a \sim N(\|\mu_a\|^2, (\alpha + \|\mu_a\|^4/2) I)$. Depending on the sampled vector the value of $k_a^T \mu_a$ might be rather big or small. Therefore, the vector $c$ expected to be roughly equal to $p v_a + (1-p) v_b$, where $p\in[0,1]$ and $p$ depends on the $\|k_a\|$.
+\smallskip
+
+\noindent (d) i. Analogiously to (c): $q_1 = Q\mu_a$, $q_2 = Q\mu_b$.
+
+ii. I expect the output $c$ to be still approximately equal to $\frac{1}{2}(q_1 + q_2)$. Regardless of how big $\|k_a\|$ is, the component $k_a^T q_1$ still dominates over $k_i^T q_1$, and all the more $k_b^T q_2$ still dominates over $k_i^T q_2$.
+\smallskip
+
+\noindent (e) i. Let's do some computations:
+$$
+\langle x_1, x_1\rangle = \|u_b\|^2 + \|u_d\|^2 = 2\beta^2, \quad
+\langle x_1, x_2\rangle = 0, \quad
+\langle x_1, x_3\rangle = \|u_b\|^2 = \beta^2,
+$$
+$$
+\langle x_2, x_2\rangle = \|u_a\|^2 = \beta^2, \quad
+\langle x_2, x_3\rangle = 0, \quad
+\langle x_3, x_3\rangle = \|u_c\|^2 + \|u_b\|^2 = 2\beta^2.
+$$
+$$
+\alpha_{11} = \frac{e^{2\beta^2}}{e^{2\beta^2} + 1 + e^{\beta^2}} \to 1,\quad
+\alpha_{22} = \frac{e^{\beta^2}}{2 + e^{\beta^2}} \to 1, \quad
+\alpha_{33} = \frac{e^{2\beta^2}}{e^{\beta^2} + 1 + e^{2\beta^2}} \to 1,
+$$
+$$
+\alpha_{12} = \alpha_{32} = \frac{1}{e^{2\beta^2} + 1 + e^{\beta^2}}\to 0,\quad
+\alpha_{13} = \alpha_{31} = \frac{e^{\beta^2}}{e^{2\beta^2} + 1 + e^{\beta^2}}\to 0,
+$$
+$$
+\alpha_{21} = \alpha_{23} = \frac{1}{2 + e^{\beta^2}}\to 0.
+$$
+Hence $c_2 = \sum_{j=1}^3 \alpha_{2j}v_j = \alpha_{21}(u_d + u_b) + \alpha_{22} u_a + \alpha_{23}(u_c + u_b) \approx u_a$. Adding $u_d$ or $u_c$ to $x_2$ won't help to approximate $u_b$ with $c_2$.
+
+ii. First, consider $V = \beta^{-2}(u_bu_b^T - u_cu_c^T)$ and compute
+$$
+v_1 = V(u_d + u_b) = \beta^{-2}u_b(u_b^Tu_d) + \beta^{-2}u_b(u_b^Tu_b) - \beta^{-2}u_c(u_c^Tu_d) - \beta^{-2}u_c(u_c^Tu_b) = u_b,
+$$
+$$
+v_2 = Vu_a = \beta^{-2}(u_b(u_b^Tu_a) - u_c(u_c^Tu_a)) = 0,
+$$
+$$
+v_3 = V(u_c + u_b) = \beta^{-2}u_b(u_b^Tu_c) + \beta^{-2}u_b(u_b^Tu_b) - \beta^{-2}u_c(u_c^Tu_c) - \beta^{-2}u_c(u_c^Tu_b) = u_b - u_c.
+$$
+The ultimate goal is to achieve the following relations:
+$$
+c_1 = \alpha_{11} v_1 + \alpha_{12} v_2 + \alpha_{13} v_3 = \alpha_{11} u_b + \alpha_{13} (u_b-u_c) \approx u_b - u_c,
+$$
+$$
+c_2 = \alpha_{21} v_1 + \alpha_{22} v_2 + \alpha_{23} v_3 = \alpha_{21} u_b + \alpha_{23} (u_b-u_c) \approx u_b.
+$$
+To achive that, it's sufficient to obtain
+$$
+\alpha_{11} \to 0, \quad \alpha_{12} \to 0, \quad \alpha_{13} \to 1,
+$$
+$$
+\alpha_{21} \to 1, \quad \alpha_{22} \to 0, \quad \alpha_{23} \to 0,
+$$
+$$
+\alpha_{31} \to 0, \quad \alpha_{32} \to 1, \quad \alpha_{33} \to 0.
+$$
+In turn, since $\alpha_{ij} = \frac{\exp(k_j^Tq_i)}{\sum_{l=1}^n \exp(k_l^Tq_i)}$, that will be true, if
+$$
+k_1^Tq_1 = 0, \quad k_2^Tq_1 = 0, \quad k_3^Tq_1 = \beta^2,
+$$
+$$
+k_1^Tq_2 = \beta^2, \quad k_2^Tq_2 = 0, \quad k_3^Tq_2 = 0,
+$$
+$$
+k_1^Tq_3 = 0, \quad k_2^Tq_3 = \beta^2, \quad k_3^Tq_3 = 0.
+$$
+It's easy to see that these equations will be true, if we put
+$$
+k_1 = u_a, \quad k_2 = u_c, \quad k_3 = u_b,
+$$
+$$
+q_1 = u_b, \quad q_2 = u_a, \quad q_3 = u_c.
+$$
+So what remains is to choose matrices $K, Q$ such that the equations above are fulfilled.
+Let's prove that the matrices
+$$
+K = \beta^{-2}(u_cu_a^T + u_au_d^T + u_bu_c^T),
+$$
+$$
+Q = \beta^{-2}(u_a u_a^T + u_bu_d^T + u_cu_c^T).
+$$
+will suit. Let's prove that:
+$$
+k_1 = K(u_d + u_b) = 
+$$
+$$=\beta^{-2}(u_c(u_a^Tu_d) + u_a(u_d^Tu_d) + u_b(u_c^Tu_d) + u_c(u_a^Tu_b) + u_a(u_d^Tu_b) + u_b(u_c^Tu_b)) = u_a
+$$
+$$
+k_2 = K u_a = \beta^{-2}(u_c(u_a^Tu_a) + u_a(u_d^Tu_a) + u_b(u_c^Tu_a)) = u_c
+$$
+$$
+k_3 = K(u_c + u_b) = 
+$$
+$$=\beta^{-2}(u_c(u_a^Tu_c) + u_a(u_d^Tu_c) + u_b(u_c^Tu_c) + u_c(u_a^Tu_b) + u_a(u_d^Tu_b) + u_b(u_c^Tu_b)) = u_b
+$$
+
+$$
+q_1 = Q(u_d + u_b) = 
+$$
+$$=\beta^{-2}(u_a(u_a^Tu_d) + u_b(u_d^Tu_d) + u_c(u_c^Tu_d) + u_a(u_a^Tu_b) + u_b(u_d^Tu_b) + u_c(u_c^Tu_b)) = u_b
+$$
+$$
+q_2 = Q u_a = \beta^{-2}(u_a(u_a^Tu_a) + u_b(u_d^Tu_a) + u_c(u_c^Tu_a)) = u_a
+$$
+$$
+q_3 = Q(u_c + u_b) = 
+$$
+$$=\beta^{-2}(u_a(u_a^Tu_c) + u_b(u_d^Tu_c) + u_c(u_c^Tu_c) + u_a(u_a^Tu_b) + u_b(u_d^Tu_b) + u_c(u_c^Tu_b)) = u_c.
+$$
+\smallskip
+
+\section{Pretrained Transformer models and knowledge access}
+
+\noindent (d) Vanilla model's accuracy on the dev set is 1,4\%.
+
+London baseline model's accuracy on the same dev set is 5\%.
+\smallskip
+
+\noindent (f) Pretrained & finetuned vanilla model's accuracy on the dev set is 21,8\%.
+\smallskip
+
+\noindent (g) Synthesizer attention model's accuracy on the dev set is 6,2\%.
+
+Synthesizer might not be able to perform at the same level as the ordinary self-attention, since it has less parameters to capture some advanced patterns.
+
+\section{Considerations in pretrained knowledge}
+
+\noindent (a) Pretraining helped a lot because of the span corruption technique used - by randomly noising the input text we've emulated model training on larger ammount of data. So we've pretrained the model on the "large" ammount of data which we couldn't do with the initial task.
+\smallskip
+
+\noindent (b) 1) Predicting the birplace of the persons previously unseen by the model becomes risky. 2) The people with exactly the same names may live in different places.
+\smallskip
+
+\noindent (c) The model might look at similar person names (if a person name seem to German, look at German names, for example) and try to guess the birthplace based on the data of the people with similar names. The problem here is that the even the person with German name, for example, might live anywhere, not necessarily in Germany. 
+\smallskip
+
+\end{document}

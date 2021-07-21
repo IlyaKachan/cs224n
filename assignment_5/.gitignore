@@ -1,0 +1,9 @@
+# input data
+birth_dev.tsv
+birth_places_train.tsv
+birth_test_inputs.tsv
+wiki.txt
+
+# models artifacts
+*.params
+*.predictions
